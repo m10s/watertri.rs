@@ -17,9 +17,9 @@ pub struct RayData<S> {
     kx: usize,
     ky: usize,
     kz: usize,
-    Sx: S,
-    Sy: S,
-    Sz: S,
+    sx: S,
+    sy: S,
+    sz: S,
     org: Vector3<S>,
 }
 
@@ -41,9 +41,9 @@ where
             kx: kx,
             ky: ky,
             kz: kz,
-            Sx: dir[kx] / dir[kz],
-            Sy: dir[ky] / dir[kz],
-            Sz: S::one() / dir[kz],
+            sx: dir[kx] / dir[kz],
+            sy: dir[ky] / dir[kz],
+            sz: S::one() / dir[kz],
             org: org,
         }
     }
@@ -51,58 +51,58 @@ where
     /// Perform the intersection calculation.
     pub fn intersect(
         &self,
-        A: Vector3<S>,
-        B: Vector3<S>,
-        C: Vector3<S>,
+        a: Vector3<S>,
+        b: Vector3<S>,
+        c: Vector3<S>,
     ) -> Option<Intersection<S>> {
-        let (Sx, Sy, Sz, org) = (self.Sx, self.Sy, self.Sz, self.org);
+        let (sx, sy, sz, org) = (self.sx, self.sy, self.sz, self.org);
         let (kx, ky, kz) = (self.kx, self.ky, self.kz);
-        let (A, B, C) = (A - org, B - org, C - org);
-        let Ax = A[kx] - Sx * A[kz];
-        let Ay = A[ky] - Sy * A[kz];
-        let Bx = B[kx] - Sx * B[kz];
-        let By = B[ky] - Sy * B[kz];
-        let Cx = C[kx] - Sx * C[kz];
-        let Cy = C[ky] - Sy * C[kz];
+        let (a, b, c) = (a - org, b - org, c - org);
+        let ax = a[kx] - sx * a[kz];
+        let ay = a[ky] - sy * a[kz];
+        let bx = b[kx] - sx * b[kz];
+        let by = b[ky] - sy * b[kz];
+        let cx = c[kx] - sx * c[kz];
+        let cy = c[ky] - sy * c[kz];
 
-        let mut U = Cx * By - Cy * Bx;
-        let mut V = Ax * Cy - Ay * Cx;
-        let mut W = Bx * Ay - By * Ax;
+        let mut u = cx * by - cy * bx;
+        let mut v = ax * cy - ay * cx;
+        let mut w = bx * ay - by * ax;
 
-        if U == S::zero() || V == S::zero() || W == S::zero() {
-            let CxBy = Cx * By;
-            let CyBx = Cy * Bx;
-            U = CxBy - CyBx;
-            let AxCy = Ax * Cy;
-            let AyCx = Ay * Cx;
-            V = AxCy - AyCx;
-            let BxAy = Bx * Ay;
-            let ByAx = By * Ax;
-            W = BxAy - ByAx;
+        if u == S::zero() || v == S::zero() || w == S::zero() {
+            let cxby = cx * by;
+            let cybx = cy * bx;
+            u = cxby - cybx;
+            let axcy = ax * cy;
+            let aycx = ay * cx;
+            v = axcy - aycx;
+            let bxay = bx * ay;
+            let byax = by * ax;
+            w = bxay - byax;
         }
 
-        if (U < S::zero() || V < S::zero() || W < S::zero())
-            && (U > S::zero() || V > S::zero() || W > S::zero())
+        if (u < S::zero() || v < S::zero() || w < S::zero())
+            && (u > S::zero() || v > S::zero() || w > S::zero())
         {
             return None;
         }
 
-        let det = U + V + W;
+        let det = u + v + w;
         if det == S::zero() {
             return None;
         }
 
-        let Az = Sz * A[kz];
-        let Bz = Sz * B[kz];
-        let Cz = Sz * C[kz];
-        let T = U * Az + V * Bz + W * Cz;
+        let az = sz * a[kz];
+        let bz = sz * b[kz];
+        let cz = sz * c[kz];
+        let t = u * az + v * bz + w * cz;
 
-        let rcpDet = S::one() / det;
+        let rcp_det = S::one() / det;
         Some(Intersection {
-            t: T * rcpDet,
-            u: U * rcpDet,
-            v: V * rcpDet,
-            w: W * rcpDet,
+            t: t * rcp_det,
+            u: u * rcp_det,
+            v: v * rcp_det,
+            w: w * rcp_det,
         })
     }
 }
